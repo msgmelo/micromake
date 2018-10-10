@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <ctype.h>
 
 /* CONSTANTS */
 
@@ -20,6 +21,12 @@
  * process to execute the line and waits for that process to complete. 
  */
 void processline(char* line);
+
+/* Argument Parse
+ * This function returns an array of new pointers that point to the beginning
+ * character of each word in a line, ignoring whitespace.
+ */
+char** arg_parse(char* line);
 
 /* Main entry point.
  * argc    A count of command-line arguments 
@@ -90,4 +97,44 @@ void processline (char* line) {
     break;
   }
   }
+}
+
+
+char** arg_parse(char* line)
+{
+    int count = 0;
+    int i = 0;
+    int word = 0; // stores whehter iterator is currently within a word
+    int *tmp = NULL; // stores the locations beginnings of the words
+    
+    // count number of words in line
+    while(line[i] != '\0') {
+        
+        if (isspace(line[i])) {
+            word = 0;
+        } else if (!word) {
+            word = 1;
+            tmp[count] = i;
+            count++;
+        } // end if-else
+
+        i++;
+    } // end while
+
+    // allocate space for args, adding 1 to count for null pointer
+    char** args = (char**) malloc((count + 1)*sizeof(char*));
+    if (args == NULL) {
+        perror("malloc");
+        exit(1);
+    }
+
+    // copy tmp array into malloc'd args
+    int loc = 0;
+
+    for (i = 0; i < count; i++) {
+        loc = tmp[i];
+        args[i] = &line[loc];
+    }
+
+    return args;
 }
