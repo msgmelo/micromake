@@ -1,6 +1,9 @@
 /* CSCI 347 micro-make
  * 
  * 09 AUG 2017, Aran Clauson
+ *
+ * UPDATED:
+ * 12 OCT 2018, Melody Grappo
  */
 
 
@@ -39,7 +42,7 @@ char** arg_parse(char* line);
  */
 int main(int argc, const char* argv[]) {
 
-    FILE* makefile = fopen("./uMakefile", "r");
+    FILE* makefile  = fopen("./uMakefile", "r");
 
     size_t  bufsize = 0;
     char*   line    = NULL;
@@ -58,7 +61,9 @@ int main(int argc, const char* argv[]) {
         linelen = getline(&line, &bufsize, makefile);
     }
 
+    fclose(makefile);
     free(line);
+
     return EXIT_SUCCESS;
 }
 
@@ -68,9 +73,9 @@ int main(int argc, const char* argv[]) {
  */
 void processline (char* line) {
  
-    char** argv = arg_parse(line); 
-
+    char** argv     = arg_parse(line); 
     const pid_t cpid = fork();
+
     switch(cpid) {
 
       case -1: {
@@ -82,7 +87,7 @@ void processline (char* line) {
           execvp(argv[0], argv);
           perror("execvp");
           exit(EXIT_FAILURE);
-        break;
+          break;
       }
 
       default: {
@@ -107,18 +112,18 @@ void processline (char* line) {
 char** arg_parse(char* line)
 {
     int count = 0;
-    int i = 0;
-    int word = 0; // stores whehter iterator is currently within a word
+    int i     = 0;
+    int word  = 0; // stores whehter iterator is currently within a word
     int tmp[MAX_ARGS]; // stores the locations beginnings of the words
    
     // count number of words in line
     while(line[i] != '\0') {
 	
         if (isspace(line[i]) && word) { // just finished a word
-            word = 0;
+            word    = 0;
             line[i] = '\0'; // null terminate the word
         } else if (!isspace(line[i]) && !word) {
-            word = 1;
+            word       = 1;
             tmp[count] = i;
             count++;
         } // end if-else
@@ -134,13 +139,15 @@ char** arg_parse(char* line)
         exit(1);
     }
 
-    // copy tmp array into malloc'd args
+    // initalize malloc'd array with the chars in line indicated by
+    // the locations in the tmp array
     int loc = 0;
-
     for (i = 0; i < count; i++) {
-        loc = tmp[i];
+        loc     = tmp[i];
         args[i] = &line[loc];
     }
+
+    args[count] = '\0'; // null terminate args
 
     return args;
 }
