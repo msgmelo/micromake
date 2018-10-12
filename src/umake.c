@@ -39,28 +39,27 @@ char** arg_parse(char* line);
  */
 int main(int argc, const char* argv[]) {
 
-  FILE* makefile = fopen("./uMakefile", "r");
+    FILE* makefile = fopen("./uMakefile", "r");
 
-  size_t  bufsize = 0;
-  char*   line    = NULL;
-  ssize_t linelen = getline(&line, &bufsize, makefile);
+    size_t  bufsize = 0;
+    char*   line    = NULL;
+    ssize_t linelen = getline(&line, &bufsize, makefile);
 
-  while(-1 != linelen) {
+    while(-1 != linelen) {
 
-    if(line[linelen-1]=='\n') {
-      linelen -= 1;
-      line[linelen] = '\0';
+        if(line[linelen-1]=='\n') {
+            linelen -= 1;
+            line[linelen] = '\0';
+        }
+
+        if(line[0] == '\t') 
+            processline(&line[1]);
+
+        linelen = getline(&line, &bufsize, makefile);
     }
 
-    if(line[0] == '\t') 
-      processline(&line[1]);
-
-
-    linelen = getline(&line, &bufsize, makefile);
-  }
-
-  free(line);
-  return EXIT_SUCCESS;
+    free(line);
+    return EXIT_SUCCESS;
 }
 
 
@@ -69,43 +68,42 @@ int main(int argc, const char* argv[]) {
  */
 void processline (char* line) {
  
-  char** argv = arg_parse(line); 
+    char** argv = arg_parse(line); 
 
-  const pid_t cpid = fork();
-  switch(cpid) {
+    const pid_t cpid = fork();
+    switch(cpid) {
 
-  case -1: {
-    perror("fork");
-    break;
-  }
+      case -1: {
+          perror("fork");
+          break;
+      }
 
-  case 0: {
-    execvp(argv[0], argv);
-    perror("execvp");
-    exit(EXIT_FAILURE);
-    break;
-  }
+      case 0: {
+          execvp(argv[0], argv);
+          perror("execvp");
+          exit(EXIT_FAILURE);
+        break;
+      }
 
-  default: {
-    int   status;
-    const pid_t pid = wait(&status);
-    if(-1 == pid) {
-      perror("wait");
-    }
-    else if (pid != cpid) {
-      fprintf(stderr, "wait: expected process %d, but waited for process %d",
-              cpid, pid);
-    }
+      default: {
+          int   status;
+          const pid_t pid = wait(&status);
+          if(-1 == pid) {
+              perror("wait");
+          } else if (pid != cpid) {
+              fprintf(stderr, "wait: expected process %d, but waited for process %d",
+                  cpid, pid);
+          }
 
-    free(argv); // free the array
-    printf("free\n");
-
-    break;
-  }
-  }
+          free(argv); // free the array
+          break;
+      }
+   } // end switch
 }
 
-
+/* Arg Parse
+ *
+ */ 
 char** arg_parse(char* line)
 {
     int count = 0;
@@ -115,6 +113,7 @@ char** arg_parse(char* line)
    
     // count number of words in line
     while(line[i] != '\0') {
+	
         if (isspace(line[i]) && word) { // just finished a word
             word = 0;
             line[i] = '\0'; // null terminate the word
@@ -124,7 +123,8 @@ char** arg_parse(char* line)
             count++;
         } // end if-else
 
-        i++;
+	i++;
+
     } // end while
 
     // allocate space for args, adding 1 to count for null pointer
@@ -134,8 +134,6 @@ char** arg_parse(char* line)
         exit(1);
     }
 
-    printf("malloc\n");
-
     // copy tmp array into malloc'd args
     int loc = 0;
 
@@ -143,8 +141,6 @@ char** arg_parse(char* line)
         loc = tmp[i];
         args[i] = &line[loc];
     }
-
-    //args[count+1] = NULL;
 
     return args;
 }
