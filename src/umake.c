@@ -11,7 +11,7 @@
 #include <ctype.h>
 
 /* CONSTANTS */
-
+#define MAX_ARGS 24 // maximum amount of arguments for the executing function
 
 /* PROTOTYPES */
 
@@ -44,7 +44,7 @@ int main(int argc, const char* argv[]) {
   size_t  bufsize = 0;
   char*   line    = NULL;
   ssize_t linelen = getline(&line, &bufsize, makefile);
-  
+
   while(-1 != linelen) {
 
     if(line[linelen-1]=='\n') {
@@ -68,7 +68,9 @@ int main(int argc, const char* argv[]) {
  * 
  */
 void processline (char* line) {
-  
+ 
+  char** argv = arg_parse(line); 
+
   const pid_t cpid = fork();
   switch(cpid) {
 
@@ -78,8 +80,8 @@ void processline (char* line) {
   }
 
   case 0: {
-    execlp(line, line, (char*)(0));
-    perror("execlp");
+    execvp(argv[0], argv);
+    perror("execvp");
     exit(EXIT_FAILURE);
     break;
   }
@@ -94,6 +96,10 @@ void processline (char* line) {
       fprintf(stderr, "wait: expected process %d, but waited for process %d",
               cpid, pid);
     }
+
+    free(argv); // free the array
+    printf("free\n");
+
     break;
   }
   }
@@ -105,14 +111,14 @@ char** arg_parse(char* line)
     int count = 0;
     int i = 0;
     int word = 0; // stores whehter iterator is currently within a word
-    int *tmp = NULL; // stores the locations beginnings of the words
-    
+    int tmp[MAX_ARGS]; // stores the locations beginnings of the words
+   
     // count number of words in line
     while(line[i] != '\0') {
-        
-        if (isspace(line[i])) {
+        if (isspace(line[i]) && word) { // just finished a word
             word = 0;
-        } else if (!word) {
+            line[i] = '\0'; // null terminate the word
+        } else if (!isspace(line[i]) && !word) {
             word = 1;
             tmp[count] = i;
             count++;
@@ -128,6 +134,8 @@ char** arg_parse(char* line)
         exit(1);
     }
 
+    printf("malloc\n");
+
     // copy tmp array into malloc'd args
     int loc = 0;
 
@@ -135,6 +143,8 @@ char** arg_parse(char* line)
         loc = tmp[i];
         args[i] = &line[loc];
     }
+
+    //args[count+1] = NULL;
 
     return args;
 }
