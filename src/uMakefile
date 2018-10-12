@@ -1,5 +1,3 @@
-	pwd
-	ls
-	pwd
-	who
-
+		echo one two three
+	echo	 four five six
+		     echo seven 	eight	   	nine

@@ -62,8 +62,8 @@ int main(int argc, const char* argv[]) {
     }
 
     fclose(makefile);
-    free(line);
 
+    free(line);
     return EXIT_SUCCESS;
 }
 
@@ -80,12 +80,14 @@ void processline (char* line) {
 
       case -1: {
           perror("fork");
+	  free(argv);
           break;
       }
 
       case 0: {
           execvp(argv[0], argv);
           perror("execvp");
+	  free(argv);
           exit(EXIT_FAILURE);
           break;
       }
