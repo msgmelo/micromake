@@ -7,14 +7,12 @@
  */
 
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <ctype.h>
+#include "arg_parse.h"
+
 
 /* CONSTANTS */
-#define MAX_ARGS 24 // maximum amount of arguments for the executing function
 
 /* PROTOTYPES */
 
@@ -24,12 +22,6 @@
  * process to execute the line and waits for that process to complete. 
  */
 void processline(char* line);
-
-/* Argument Parse
- * This function returns an array of new pointers that point to the beginning
- * character of each word in a line, ignoring whitespace.
- */
-char** arg_parse(char* line);
 
 /* Main entry point.
  * argc    A count of command-line arguments 
@@ -55,101 +47,64 @@ int main(int argc, const char* argv[]) {
             line[linelen] = '\0';
         }
 
-        if(line[0] == '\t') 
+	if(line[0] == '\t') 
             processline(&line[1]);
 
         linelen = getline(&line, &bufsize, makefile);
+
     }
 
     fclose(makefile);
-
     free(line);
+
     return EXIT_SUCCESS;
 }
 
 
 /* Process Line
+ * line   The command line to execute
  * 
+ * This function calls arg_parse to get the arguments for the given line, 
+ * then uses fork to execute the command given in the line in the child process.
+ * The parent process waits for the child to complete before the function exits.
  */
 void processline (char* line) {
  
-    char** argv     = arg_parse(line); 
-    const pid_t cpid = fork();
+    int argcp       = -1;
+    char** argv     = arg_parse(line, &argcp);
+    
+    if (argcp  > 1) {
+	const pid_t cpid = fork();
 
-    switch(cpid) {
+	switch(cpid) {
 
-      case -1: {
-          perror("fork");
-	  free(argv);
-          break;
-      }
+	  case -1: { // error
+	      perror("fork");
+	      free(argv);
+	      break;
+	  }
 
-      case 0: {
-          execvp(argv[0], argv);
-          perror("execvp");
-	  free(argv);
-          exit(EXIT_FAILURE);
-          break;
-      }
+	  case 0: { // child
+	      execvp(argv[0], argv);
+	      perror("execvp");
+	      free(argv);
+	      exit(EXIT_FAILURE);
+	      break;
+	  }
 
-      default: {
-          int   status;
-          const pid_t pid = wait(&status);
-          if(-1 == pid) {
-              perror("wait");
-          } else if (pid != cpid) {
-              fprintf(stderr, "wait: expected process %d, but waited for process %d",
-                  cpid, pid);
-          }
+	  default: { // parent
+	      int   status;
+	      const pid_t pid = wait(&status);
+	      if(-1 == pid) {
+		  perror("wait");
+	      } else if (pid != cpid) {
+		  fprintf(stderr, "wait: expected process %d, but waited for process %d",
+		      cpid, pid);
+	      }
 
-          free(argv); // free the array
-          break;
-      }
-   } // end switch
-}
-
-/* Arg Parse
- *
- */ 
-char** arg_parse(char* line)
-{
-    int count = 0;
-    int i     = 0;
-    int word  = 0; // stores whehter iterator is currently within a word
-    int tmp[MAX_ARGS]; // stores the locations beginnings of the words
-   
-    // count number of words in line
-    while(line[i] != '\0') {
-	
-        if (isspace(line[i]) && word) { // just finished a word
-            word    = 0;
-            line[i] = '\0'; // null terminate the word
-        } else if (!isspace(line[i]) && !word) {
-            word       = 1;
-            tmp[count] = i;
-            count++;
-        } // end if-else
-
-	i++;
-
-    } // end while
-
-    // allocate space for args, adding 1 to count for null pointer
-    char** args = (char**) malloc((count + 1)*sizeof(char*));
-    if (args == NULL) {
-        perror("malloc");
-        exit(1);
+	      free(argv); 
+	      break;
+	  }
+       } 
     }
-
-    // initalize malloc'd array with the chars in line indicated by
-    // the locations in the tmp array
-    int loc = 0;
-    for (i = 0; i < count; i++) {
-        loc     = tmp[i];
-        args[i] = &line[loc];
-    }
-
-    args[count] = '\0'; // null terminate args
-
-    return args;
 }
