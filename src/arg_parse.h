@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
 
 /* Argument Parse
  * line     The arguments to be parsed
@@ -14,6 +15,10 @@
  * will be returned via the argcp parameter.
  */
 char** arg_parse(char* line, int* argcp);
+
+int arg_count(char* line);
+
+void arg_copy(char* line, char** args);
 
 
 #endif

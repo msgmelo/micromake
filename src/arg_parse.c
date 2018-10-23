@@ -15,10 +15,33 @@
  * argcp    The location to store the argument count
  *
  * This function returns an array of new pointers that point to the beginning
- * character of each word in a line, ignoring whitespace.
+ * character of each word in a line, ignoring whitespace
+ *
+ * Operates in two parts, first part count the number of arguments, the second part
+ * adds the location of the beginning of each argument to a new heap-allocated array,
+ * which is returned.
  */
 char** arg_parse(char* line, int* argcp)
 {
+    assert(argcp != NULL && "must pass valid pointer to arg_parse");
+
+    int count = arg_count(line);
+
+    char** args = (char**) malloc((count + 1)*sizeof(char*));
+    if (args == NULL) {
+        perror("malloc");
+        exit(1);
+    }
+
+    arg_copy(line, args);
+
+    *argcp = count; 
+    return args;
+}
+
+int arg_count(char*line) {
+
+
     int count    = 0;
     int i        = 0;
     int in_word  = 0; 
@@ -32,18 +55,16 @@ char** arg_parse(char* line, int* argcp)
             count++;
         } 
 	i++;
-
-    } 
-
-    char** args = (char**) malloc((count + 1)*sizeof(char*));
-    if (args == NULL) {
-        perror("malloc");
-        exit(1);
     }
 
-    int j   = 0;
-    i       = 0;
-    in_word = 0;
+    return count;
+}
+
+void arg_copy(char* line, char** args){
+
+    int i       = 0;
+    int j       = 0;
+    int in_word = 0;
 
     while(line[i] != '\0') {
 
@@ -58,11 +79,8 @@ char** arg_parse(char* line, int* argcp)
 	
 	i++;
     }
+    
+    args[j] = NULL;
+}
 	
     
-
-    args[count] = NULL;
-    *argcp = count; 
-    
-    return args;
-}
