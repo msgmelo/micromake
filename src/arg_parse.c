@@ -27,7 +27,7 @@ char** arg_parse(char* line, int* argcp)
 
     int count = arg_count(line);
 
-    char** args = (char**) malloc((count + 1)*sizeof(char*));
+    char** args = malloc((count + 1)*sizeof(char*));
     if (args == NULL) {
         perror("malloc");
         exit(1);
@@ -39,7 +39,12 @@ char** arg_parse(char* line, int* argcp)
     return args;
 }
 
-int arg_count(char*line) {
+/* Argument count
+ * line    The arguments to be counted
+ *
+ * This function counts the number of arguments within a line.
+ */
+int arg_count(char* line) {
 
 
     int count    = 0;
@@ -60,6 +65,15 @@ int arg_count(char*line) {
     return count;
 }
 
+
+/* Argument copy
+ * line    The original arguments
+ * args    The pointer array to store the beginning of each argument
+ * 
+ * This function copies the location of the beginning of each argument
+ * in a line into the args array, and null terminates each argument within
+ * the line.
+ */
 void arg_copy(char* line, char** args){
 
     int i       = 0;
