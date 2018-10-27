@@ -102,6 +102,12 @@ int main(int argc, const char* argv[]) {
     }
 
 
+    // free list
+    while (l != NULL) {
+	target* tmp = (target*) l;
+	l = l->next;
+	target_free(tmp, NULL);
+    }
 
     fclose(makefile);
     free(line);
