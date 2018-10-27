@@ -2,17 +2,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-//void list_append( list* l, cons* c) {
-//    assert(l != NULL && "cannot append to an empty list");
-//
-//    printf("got through assert\n");
-//    while ((*l)->next != NULL) {
-//	printf("while...\n");
-//	l = &((*l)->next);
-//    }
-//    (*l) = c;
-//}
-//
 
 void list_append( list* l, cons* c) {
 
@@ -63,4 +52,18 @@ cons* list_find(list l, int ismatch(cons* cn, void* ag), void *arg) {
 }
 
 
+void* halloc(size_t sz) {
+//    printf("[list] about to malloc\n");
+    
+    void* p = malloc(sz);
 
+  //  printf("[list] just malloc'd\n");
+    if ( p== NULL ) {
+	perror("malloc");
+	abort();
+    }
+
+    //printf("[list] about to return\n");
+
+    return p;
+}

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <assert.h>
+#include "list.h"
 
 /* Argument Parse
  * line     The arguments to be parsed
@@ -19,6 +20,5 @@ char** arg_parse(char* line, int* argcp);
 int arg_count(char* line);
 
 void arg_copy(char* line, char** args);
-
 
 #endif
