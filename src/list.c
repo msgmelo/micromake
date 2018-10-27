@@ -37,7 +37,6 @@ unsigned list_length(list l) {
 
 void list_for_each(list l, action_fun action, void* arg) {
 
-    printf("list_for_each\n");
     while (l != NULL) {
 	action(l, arg);
 	l = l->next;
