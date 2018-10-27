@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+/* FUNCTION DESCRIPTIONS IN HEADER FILE */
 
 void list_append( list* l, cons* c) {
 
@@ -15,7 +16,12 @@ void list_append( list* l, cons* c) {
     }
 }
 
-
+/* List Length Auxilary
+ * l      list whose length to find
+ * len    length of lis
+ *
+ * Recursive helper function for list_length()
+ */
 static
 unsigned list_length_aux(list l, unsigned len) {
     if (l == NULL) 
@@ -51,19 +57,13 @@ cons* list_find(list l, int ismatch(cons* cn, void* ag), void *arg) {
     return match;
 }
 
-
 void* halloc(size_t sz) {
-//    printf("[list] about to malloc\n");
-    
     void* p = malloc(sz);
 
-  //  printf("[list] just malloc'd\n");
     if ( p== NULL ) {
 	perror("malloc");
 	abort();
     }
-
-    //printf("[list] about to return\n");
 
     return p;
 }

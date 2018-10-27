@@ -2,6 +2,7 @@
 #include "target.h"
 #include "arg_parse.h"
 
+/* FUNCTION DESCRIPTIONS IN HEADER FILE */
 
 struct target_st {
     target* next;
@@ -15,7 +16,6 @@ target* target_new(char* name) {
     target* t = malloc(sizeof(target));
 
     if (t != NULL) {
-//	t->name = halloc(strlen(name));
 	t->name = strndup(name, strlen(name));
 	t->rules = NULL;
 	t->rule_count = 0;
@@ -23,6 +23,12 @@ target* target_new(char* name) {
     
     return t;
 }
+
+void target_print(cons* c, void* arg) {
+    target* t = (target*) c;
+    printf("%s\n", t->name);
+}
+
 
 static void rules_free(char** rules, int count) {
 
@@ -55,19 +61,41 @@ char** target_getrules(target* t) {
 }
 
 
+/* Copy Seek
+ * dest          where char** data will be copied
+ * source        where char** data will be copied from
+ * dest_offset   where to start in destination
+ * max           where to end in destination
+ *
+ * This is a helper function for adding a rule to a given target. It allocates
+ * space to each char* string pointed to, and copies the source char* pointer into
+ * the new array. 
+ * returns where in the destination the copy finished
+ */
 static int copy_seek(char** dest, char** source, int dest_offset, int max) {
     int i = 0;
-    size_t sz = 0;
 
     for ( ; dest_offset < max; dest_offset++) {
-	sz = strlen(source[i] + 1);
-	dest[dest_offset] = halloc(sz);
-	strncpy(dest[dest_offset], source[i], strlen(dest[dest_offset]));
+	dest[dest_offset] = halloc(sizeof(char) * strlen(source[i]));
+	strcpy(dest[dest_offset], source[i]);
+	i++;
     }
 
     return dest_offset;
 }
 
+/* Target Add Rule
+ * t             Pointer to target to add rule to
+ * rule          Rule to add
+ * count         Number of arguments in given rule
+ *
+ * This function adds the given rule to the target, allocating and freeing
+ * the rule space as necessary. If the target has no given rules, it simply 
+ * calls copy_seek() described above. Otherwise, it allocates space for the
+ * old rules and new rules, then copies the old rules into the new rule array.
+ * It then copies the new rules into the new array, before freeing the original 
+ * rules. The rule_count is updated.
+ */
 void target_addrule(target* t, char** rule, int count) {
     assert(t != NULL && "cannot add rule to NULL target");
     
@@ -93,7 +121,7 @@ void target_addrule(target* t, char** rule, int count) {
     }
     
     t->rules = new_rules;
-    t->rule_count = count;
+    t->rule_count++;
    
 }
 
@@ -171,7 +199,7 @@ bool target_q3(char* line) {
 char* target_parsename(char* line) {
     int i = 0;
     int j = 0;
-    char* name = " ";
+    char name[] = "";
     int in_word = 0;
 
     while (line[i] != ':') {
@@ -187,8 +215,10 @@ char* target_parsename(char* line) {
     }
 
     name[j] = '\0';
+    char* name_final = malloc(sizeof(char) * j);
+    strncpy(name_final, name, j);
 
-    return name;
+    return name_final;
 }
 
 
@@ -203,7 +233,7 @@ target* target_findmatch(list l, const char* name) {
     target* t = NULL;
     bool found = false;
 
-    while(!found && l->next != NULL) {
+    while(!found && l != NULL) {
 	t = (target*) l;
 	if (target_ismatch(t, name)) {
 	    found = true;
