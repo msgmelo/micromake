@@ -17,8 +17,22 @@
  */
 char** arg_parse(char* line, int* argcp);
 
+
+/* Argument Count
+ * line     The arguments to be counted
+ *
+ * This function returns the number of arguments, or discrete words, in a given
+ * line, and returns that count.
+ */
 int arg_count(char* line);
 
+
+/* Argument Copy
+ * line      The original arguments
+ * args      The pointer to the array to store the beginning of each argument
+ *
+ * This function copies the starting character of each argument into args.
+ */
 void arg_copy(char* line, char** args);
 
 #endif

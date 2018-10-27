@@ -25,30 +25,11 @@ char** arg_parse(char* line, int* argcp)
 {
     assert(argcp != NULL && "must pass valid pointer to arg_parse");
 
-    printf("[argparse] about to count\n");
     int count = arg_count(line);
 
-    printf("[argparse] about to malloc\n");
     char** args = halloc((count + 1)*sizeof(char*));
 
-    printf("[argparse] about to copy\n");
     arg_copy(line, args);
-//    int j = 0;
-//    int i = 0;
-//    int in_word = 0;
-//
-//    while(line[i] != '\0') {
-//	if (isspace(line[i]) && in_word) {
-//	    in_word = 0;
-//	    line[i] = '\0';
-//	} else if (!isspace(line[i]) && !in_word) {
-//	    in_word = 1;
-//	    args[j] = &line[i];
-//	    j++;
-//	}
-//	i++;
-//    }
-//
     *argcp = count; 
     return args;
 }
