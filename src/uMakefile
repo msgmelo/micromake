@@ -1,0 +1,14 @@
+umake: umake.o arg_parse.o target.o list.o
+	gcc -o umake umake.o arg_parse.o target.o list.o
+
+umake.o: umake.c arg_parse.o target.o list.o
+	gcc -c - o umake.o umake.c 
+
+arg_parse.o: arg_parse.c list.o
+	gcc -c -o arg_parse.o arg_parse.c
+
+target.o: target.c list.o
+	gcc -c -o target.o target.c
+
+list.o: list.c
+	gcc -c -o list.o list.c
