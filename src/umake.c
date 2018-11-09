@@ -39,7 +39,28 @@ void processtarget(target* t);
  * This recursive function  calls processtarget on each of t's dependencies.
  */
 void processdep (target_list l, target* t);
-    
+
+/* Expand
+ * orig    The input string that may contain variables to be expanded
+ * new     An output buffer that will contain a copy of orig with all 
+ *         variables expanded
+ * newsize The size of the buffer pointed to by new.
+ * returns 1 upon success or 0 upon failure. 
+ *
+ * Example: "Hello, ${PLACE}" will expand to "Hello, World" when the environment
+ * variable PLACE="World". 
+ */
+int expand(char* orig, char* new, int newsize);
+
+/* Substring
+ * start    Where the substring starts
+ * end      Where the substring ends
+ * str      The string whose substring is returned
+ * This function returns the substring of the given str in the range [start, end]
+ */
+char* substring(int start, int end, char* str);
+
+
 /* Main entry point.
  * argc    A count of command-line arguments 
  * argv    The command-line argument valus
@@ -135,9 +156,17 @@ int main(int argc, const char* argv[]) {
  * The parent process waits for the child to complete before the function exits.
  */
 void processline (char* line) {
- 
+
     int argcp   = -1;
-    char** argv = arg_parse(line, &argcp);
+    char** argv = NULL;
+    int sz      = 1.5*strlen(line);
+    char buf[sz];
+
+    if (expand(line, buf, sz) == 0)
+	argv = arg_parse(line, &argcp);
+    else
+	argv = arg_parse(buf, &argcp);
+
 
     if (argcp  > 0) {
 	const pid_t cpid = fork();
@@ -172,6 +201,66 @@ void processline (char* line) {
     }
 }
 
+
+int expand(char* orig, char* new, int newsize) {
+
+    bool inexpand = false;
+    char* expansion = NULL;
+    int loc[2];
+    int i = 0;
+    int j = 0;
+
+
+    while(orig[i] && j < newsize) {
+	if (orig[i] == '$' && !inexpand) {
+	    if (orig [i+1] && orig[i+1] == '{') {
+		loc[0] = i + 2;
+		inexpand = true;
+	    }
+	} else if (orig[i]  == '}' && inexpand) {
+	    loc[1] = i - 1;
+	    char* word = substring(loc[0], loc[1], orig);
+	    expansion = getenv(word);
+	    free(word);
+	    if (expansion != NULL) {
+		int k;
+		for (k = 0; k < strlen(expansion); k++) {
+		    new[j] = expansion[k];
+		    j++;
+		}
+	    }
+	    inexpand = false;
+	} else if (!inexpand) {
+	    new[j] = orig[i];
+	    j++;
+	} 
+	i++;
+    }
+    new[j] = '\0';
+
+    if (inexpand) {
+	printf("Bracket mismatch in %s\n", orig);
+	return 0;
+    } else {
+	return 1;
+    }
+}
+
+
+char* substring(int start, int end, char* str) {
+    char sub[end-start];
+    int cur = start;
+    int i = 0;
+
+    while (cur <= end) {
+	sub[i] = str[cur];
+	i++;
+	cur++;
+    }
+
+    sub[i] = '\0';
+    return strndup(sub, strlen(sub));
+}
 
 void processtarget (target* t) {
     str_list sl = target_getrules(t);
