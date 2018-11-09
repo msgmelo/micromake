@@ -64,13 +64,16 @@ str_list target_getrules(target* t);
  * rule space as necessary.
  */
 void    target_addrule(target* t, char* rule);
+void    target_adddep(target* t, str_list dep);
 
 /* Target Parse Name
  * line     Where to parse name from
  *
  * This function returns the target name found in the given line
  */
-char*   target_parsename(char* line);
+char*    target_parsename(char* line);
+
+str_list target_parsedep(char* line);
 
 /* Target Is Match
  * t        Target to compare

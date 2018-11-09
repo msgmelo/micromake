@@ -66,14 +66,15 @@ int main(int argc, const char* argv[]) {
 	if (is_target(line) && !in_target) {
 	    in_target = 1;
 
-	    char* name = target_parsename(line);
-
-	    t = target_new(name);
+	    t = target_new(target_parsename(line));
+	    target_adddep(t, target_parsedep(line));
 
 	} else if (is_target(line) && in_target) {
 	    
 	    list_append(&l, (cons*) t);
 	    t = target_new(target_parsename(line));
+	    target_adddep(t, target_parsedep(line));
+
 
 	} else if (in_target && line[0] == '\t') {
 	    
@@ -94,11 +95,6 @@ int main(int argc, const char* argv[]) {
 
 	if (t != NULL) {
 
-	    //int i = 0;
-	    //for (i = 0; i < target_getcount(t); i++) {
-	    //    rule* r = target_getrules(t);
-	    //    processline(rule_getcommand(r), rule_getcount(r));
-	    //}
 	    str_list sl = target_getrules(t);
 	    int i = 0;
 	    while ( i < target_getcount(t) && sl != NULL){

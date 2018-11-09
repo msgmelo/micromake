@@ -72,107 +72,6 @@ str_list target_getdepend(target* t) {
 }
 
 
-
-/* Copy Seek
- * dest          where char** data will be copied
- * source        where char** data will be copied from
- * dest_offset   where to start in destination
- * max           where to end in destination
- *
- * This is a helper function for adding a rule to a given target. It allocates
- * space to each char* string pointed to, and copies the source char* pointer into
- * the new array. 
- * returns where in the destination the copy finished
- */
-//static int copy_seek(char** dest, char** source, int dest_offset, int max) {
-//    int i = 0;
-//
-//    for ( ; dest_offset < max; dest_offset++) {
-//	dest[dest_offset] = halloc(sizeof(char) * strlen(source[i]));
-//	strcpy(dest[dest_offset], source[i]);
-//	i++;
-//    }
-//
-//    return dest_offset;
-//}
-//
-/* Target Add Rule
- * t             Pointer to target to add rule to
- * rule          Rule to add
- * count         Number of arguments in given rule
- *
- * This function adds the given rule to the target, allocating and freeing
- * the rule space as necessary. If the target has no given rules, it simply 
- * calls copy_seek() described above. Otherwise, it allocates space for the
- * old rules and new rules, then copies the old rules into the new rule array.
- * It then copies the new rules into the new array, before freeing the original 
- * rules. The rule_count is updated.
- */
-
-//void target_addrule(target* t, char** rule, int count) {
-//    assert(t != NULL && "cannot add rule to NULL target");
-//    
-//    char** new_rules = NULL;
-//    
-//    if (t->rules == NULL) {
-//	
-//	new_rules = halloc((count + 1)*sizeof(char*));
-//	copy_seek(new_rules, rule, 0, count);
-//    } else {
-//	char** old_rules = t->rules;
-//	int new_count = count + t->rule_count;
-//	new_rules = halloc((new_count + 1)*sizeof(char*));
-//	
-//	int offset = copy_seek(new_rules, old_rules, 0, t->rule_count);
-//	copy_seek(new_rules, rule, offset, new_count);
-//
-//	new_rules[new_count] = NULL;
-//
-//	rules_free(old_rules, t->rule_count);
-//
-//	t->rule_count = new_count;
-//    }
-//    
-//    t->rules = new_rules;
-//    t->rule_count++;
-//   
-//}
-//
-//rule* target_makerule(char** command, int count) {
-//
-//    rule* r = halloc(sizeof(rule));
-//
-//    r->next = NULL;
-//    r->command = command;
-//    r->count = count;
-//
-//    return r;
-//}
-//
-//void target_addrule(target* t, char** rule, int count) {
-//    assert(t != NULL && "cannot add rule to NULL target");
-//
-//    rule* r_list = NULL;
-//    r_list = t->rules;
-//
-//    rule* new_rule = target_makerule(rule, count);
-//    list_append(&r_list, new_rule);
-//    t->rule_count++;
-//
-//
-//}
-//
-//void target_addrule(target* t, char** command, int count) {
-//    assert(t != NULL && "cannot add rule to NULL target");
-//
-//    rule_list r_list = t->rules;
-//
-//    rule* new_rule = target_makerule(command, count);
-//    list_append(&r_list, (cons*) new_rule);
-//    t->rule_count++;
-//}
-//
-
 void target_addrule(target* t, char* line) {
     assert(t != NULL && "cannot add rule to NULL target");
 
@@ -182,6 +81,12 @@ void target_addrule(target* t, char* line) {
     t->rules = l;
     t->rule_count++;
 
+}
+
+void target_adddep(target* t, str_list dep) {
+    assert(t != NULL && "Cannot add dependency to NULL target");
+
+    t->depends = dep;
 }
 
 
@@ -283,6 +188,45 @@ char* target_parsename(char* line) {
 
 
     return name_final;
+}
+
+str_list target_parsedep(char* line) {
+    str_list  l      = NULL;
+    str_node* dep    = NULL;
+    char      word[strlen(line)];
+    bool      indep  = false;
+    bool      inword = false;
+    int       i      = 0;
+    int       j      = 0;
+
+    while (!indep) {
+        if (line[i] == ':')
+            indep = true;
+	i++;
+    }
+
+    while (line[i] != '\0') {
+	if (isspace(line[i]) && inword) {
+	    word[j] = '\0';
+	    dep = str_new(word);
+	    list_append(&l, (cons*) dep);
+	    j = 0;
+	    inword = false;
+	} else if (!isspace(line[i]) && !inword) {
+	    inword = true;
+	}
+
+	if (!isspace(line[i]) && inword) {
+	    word[j] = line[i];
+	    j++;
+	}
+
+	i++;
+    }
+
+
+
+    return l;
 }
 
 
