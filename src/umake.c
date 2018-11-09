@@ -25,6 +25,21 @@
  */
 void processline(char* line);
 
+
+/* Process Target
+ * t     The target to process
+ * This function calls processlin() for each rule in the given target
+ */
+void processtarget(target* t);
+
+
+/* Process Dependencies
+ * l     The list of targets
+ * t     The target whose dependcies will be processed
+ * This recursive function  calls processtarget on each of t's dependencies.
+ */
+void processdep (target_list l, target* t);
+    
 /* Main entry point.
  * argc    A count of command-line arguments 
  * argv    The command-line argument valus
@@ -90,21 +105,10 @@ int main(int argc, const char* argv[]) {
 
     count = 1;
     while (count < argc) {
+
 	t = target_findmatch(l, argv[count]);
-
-
-	if (t != NULL) {
-
-	    str_list sl = target_getrules(t);
-	    int i = 0;
-	    while ( i < target_getcount(t) && sl != NULL){
-		
-		processline(str_getdata((str_node*) sl));
-		sl = sl->next;
-
-	    }
-	    
-	}
+	processdep(l, t);
+        	
 	count++;
     }
 
@@ -161,10 +165,40 @@ void processline (char* line) {
 		  fprintf(stderr, "wait: expected process %d, but waited for process %d",
 		      cpid, pid);
 	      }
-
+	      free(argv);
 	      break;
 	  }
        } 
+    }
+}
+
+
+void processtarget (target* t) {
+    str_list sl = target_getrules(t);
+    int i = 0;
+
+    while (i < target_getcount(t) && sl != NULL) {
+	char* command = str_getdata((str_node*) sl);
+	char* line = strndup(command, strlen(command));
+	processline(line);
+	free(line);
+	sl = sl->next;
+	i++;
+    }
+}
+
+void processdep (target_list l, target* t) {
+    if (t == NULL)
+	return;
+    else {
+	str_list deps = target_getdepend(t);
+	while (deps) {
+	    target* t_oth = target_findmatch(l, str_getdata((str_node*) deps));
+	    processdep(l, t_oth);
+
+	    deps = deps->next;
+	}
+	processtarget(t);
     }
 }
 

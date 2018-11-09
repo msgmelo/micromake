@@ -224,7 +224,12 @@ str_list target_parsedep(char* line) {
 	i++;
     }
 
-
+    if (inword) {
+	word[j] = '\0';
+	dep = str_new(word);
+	list_append(&l, (cons*) dep);
+    }
+    
 
     return l;
 }

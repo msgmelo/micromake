@@ -54,6 +54,7 @@ void    target_free(target* t, void* arg);
 char*    target_getname(target* t);
 int      target_getcount(target* t);
 str_list target_getrules(target* t);
+str_list target_getdepend(target* t);
 
 /* Target Add Rule
  * t        Pointer to target to add rule to
