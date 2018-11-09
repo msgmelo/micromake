@@ -1,14 +1,23 @@
-umake: umake.o arg_parse.o target.o list.o
-	gcc -o umake umake.o arg_parse.o target.o list.o
+umake: umake.o arg_parse.o target.o list.o str_node.o
+	gcc -o umake umake.o arg_parse.o target.o list.o str_node.o
+	echo done umake
 
-umake.o: umake.c arg_parse.o target.o list.o
-	gcc -c - o umake.o umake.c 
+umake.o: umake.c arg_parse.o target.o list.o str_node.o
+	gcc -c -o umake.o umake.c 
+	echo done umake.o
 
 arg_parse.o: arg_parse.c list.o
-	gcc -c -o arg_parse.o arg_parse.c
+	gcc -c -o arg_parse.o arg_parse.c 
+	echo done arg_parse.o
 
-target.o: target.c list.o
-	gcc -c -o target.o target.c
+target.o: target.c list.o str_node.o
+	gcc -c -o target.o target.c 
+	echo done target.o
+
+str_node.o: str_node.c list.o
+	gcc -c -o str_node.o str_node.c 
+	echo done str_node.o
 
 list.o: list.c
 	gcc -c -o list.o list.c
+	echo done list.o

@@ -1,13 +1,13 @@
-#include "list.h"
 #include "target.h"
-#include "arg_parse.h"
 
 /* FUNCTION DESCRIPTIONS IN HEADER FILE */
+
 
 struct target_st {
     target* next;
     char* name;
-    char** rules;
+    str_list rules;
+    str_list depends;
     int rule_count;
 };
 
@@ -16,8 +16,11 @@ target* target_new(char* name) {
     target* t = malloc(sizeof(target));
 
     if (t != NULL) {
-	t->name = strndup(name, strlen(name));
+	t->next = NULL;
+	char* t_name = strndup(name, strlen(name));
+	t->name = t_name;
 	t->rules = NULL;
+	t->depends = NULL;
 	t->rule_count = 0;
     }
     
@@ -30,14 +33,18 @@ void target_print(cons* c, void* arg) {
 }
 
 
-static void rules_free(char** rules, int count) {
+static void rules_free(str_list l, int count) {
 
-    int i;
-    for (i = 0; i < count; i++) {
-	free(rules[i]);
+    int i = 0;
+    str_node* tmp = NULL;
+
+    while (l != NULL && i < count) {
+	tmp = (str_node*) l;
+	l = l->next;
+	free(str_getdata(tmp));
+	free(tmp);
+	i++;
     }
-
-    free(rules);
 }
 
 
@@ -52,13 +59,18 @@ char* target_getname(target* t) {
     return t->name;
 }
 
-int target_getrule_count(target* t) {
+int target_getcount(target* t) {
     return t->rule_count;
 }
 
-char** target_getrules(target* t) {
+str_list target_getrules(target* t) {
     return t->rules;
 }
+
+str_list target_getdepend(target* t) {
+    return t->depends;
+}
+
 
 
 /* Copy Seek
@@ -72,18 +84,18 @@ char** target_getrules(target* t) {
  * the new array. 
  * returns where in the destination the copy finished
  */
-static int copy_seek(char** dest, char** source, int dest_offset, int max) {
-    int i = 0;
-
-    for ( ; dest_offset < max; dest_offset++) {
-	dest[dest_offset] = halloc(sizeof(char) * strlen(source[i]));
-	strcpy(dest[dest_offset], source[i]);
-	i++;
-    }
-
-    return dest_offset;
-}
-
+//static int copy_seek(char** dest, char** source, int dest_offset, int max) {
+//    int i = 0;
+//
+//    for ( ; dest_offset < max; dest_offset++) {
+//	dest[dest_offset] = halloc(sizeof(char) * strlen(source[i]));
+//	strcpy(dest[dest_offset], source[i]);
+//	i++;
+//    }
+//
+//    return dest_offset;
+//}
+//
 /* Target Add Rule
  * t             Pointer to target to add rule to
  * rule          Rule to add
@@ -96,34 +108,82 @@ static int copy_seek(char** dest, char** source, int dest_offset, int max) {
  * It then copies the new rules into the new array, before freeing the original 
  * rules. The rule_count is updated.
  */
-void target_addrule(target* t, char** rule, int count) {
+
+//void target_addrule(target* t, char** rule, int count) {
+//    assert(t != NULL && "cannot add rule to NULL target");
+//    
+//    char** new_rules = NULL;
+//    
+//    if (t->rules == NULL) {
+//	
+//	new_rules = halloc((count + 1)*sizeof(char*));
+//	copy_seek(new_rules, rule, 0, count);
+//    } else {
+//	char** old_rules = t->rules;
+//	int new_count = count + t->rule_count;
+//	new_rules = halloc((new_count + 1)*sizeof(char*));
+//	
+//	int offset = copy_seek(new_rules, old_rules, 0, t->rule_count);
+//	copy_seek(new_rules, rule, offset, new_count);
+//
+//	new_rules[new_count] = NULL;
+//
+//	rules_free(old_rules, t->rule_count);
+//
+//	t->rule_count = new_count;
+//    }
+//    
+//    t->rules = new_rules;
+//    t->rule_count++;
+//   
+//}
+//
+//rule* target_makerule(char** command, int count) {
+//
+//    rule* r = halloc(sizeof(rule));
+//
+//    r->next = NULL;
+//    r->command = command;
+//    r->count = count;
+//
+//    return r;
+//}
+//
+//void target_addrule(target* t, char** rule, int count) {
+//    assert(t != NULL && "cannot add rule to NULL target");
+//
+//    rule* r_list = NULL;
+//    r_list = t->rules;
+//
+//    rule* new_rule = target_makerule(rule, count);
+//    list_append(&r_list, new_rule);
+//    t->rule_count++;
+//
+//
+//}
+//
+//void target_addrule(target* t, char** command, int count) {
+//    assert(t != NULL && "cannot add rule to NULL target");
+//
+//    rule_list r_list = t->rules;
+//
+//    rule* new_rule = target_makerule(command, count);
+//    list_append(&r_list, (cons*) new_rule);
+//    t->rule_count++;
+//}
+//
+
+void target_addrule(target* t, char* line) {
     assert(t != NULL && "cannot add rule to NULL target");
-    
-    char** new_rules = NULL;
-    
-    if (t->rules == NULL) {
-	
-	new_rules = halloc((count + 1)*sizeof(char*));
-	copy_seek(new_rules, rule, 0, count);
-    } else {
-	char** old_rules = t->rules;
-	int new_count = count + t->rule_count;
-	new_rules = halloc((new_count + 1)*sizeof(char*));
-	
-	int offset = copy_seek(new_rules, old_rules, 0, t->rule_count);
-	copy_seek(new_rules, rule, offset, new_count);
 
-	new_rules[new_count] = NULL;
-
-	rules_free(old_rules, t->rule_count);
-
-	t->rule_count = new_count;
-    }
-    
-    t->rules = new_rules;
+    str_list l = t->rules;
+    str_node* rule = str_new(line);
+    list_append(&l, (cons*) rule);
+    t->rules = l;
     t->rule_count++;
-   
+
 }
+
 
 int target_char_class(char c){
     if (c == '\t')
@@ -199,24 +259,28 @@ bool target_q3(char* line) {
 char* target_parsename(char* line) {
     int i = 0;
     int j = 0;
-    char name[] = "";
+    char name[strlen(line)];
     int in_word = 0;
+    int fin = 0;
 
-    while (line[i] != ':') {
+    while ((line[i] != ':') && !fin) {
 
        	if (!isspace(line[i]))	{
 	    in_word = 1;
 	    name[j] = line[i];
 	    j++;
 	} else if (isspace(line[i]) && in_word) {
-	    break;
+	    fin = 1;
 	}
 	i++;
     }
 
+
     name[j] = '\0';
-    char* name_final = malloc(sizeof(char) * j);
+    char* name_final = malloc(sizeof(char) * (j + 1));
+    
     strncpy(name_final, name, j);
+
 
     return name_final;
 }
@@ -237,7 +301,6 @@ target* target_findmatch(list l, const char* name) {
 	t = (target*) l;
 	if (target_ismatch(t, name)) {
 	    found = true;
-	    break;
 	} 
 	l = l->next;
     }

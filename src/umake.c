@@ -23,7 +23,7 @@
  * This function creates a new child process to execute the line and 
  * waits for that process to complete. 
  */
-void processline(char** argv, int argcp);
+void processline(char* line);
 
 /* Main entry point.
  * argc    A count of command-line arguments 
@@ -54,7 +54,6 @@ int main(int argc, const char* argv[]) {
     target*     t         = NULL;
     target_list l         = NULL;
     int         count     = 0;
-    char**      rule      = NULL;
     int         in_target = 0;
 
     while(-1 != linelen) {
@@ -78,8 +77,7 @@ int main(int argc, const char* argv[]) {
 
 	} else if (in_target && line[0] == '\t') {
 	    
-	    rule = arg_parse(&line[1], &count);
-	    target_addrule(t, rule, count);
+	    target_addrule(t, line);
 
 	}
 
@@ -95,8 +93,21 @@ int main(int argc, const char* argv[]) {
 
 
 	if (t != NULL) {
-	    char** rules = target_getrules(t);
-            processline(rules, target_getrule_count(t));
+
+	    //int i = 0;
+	    //for (i = 0; i < target_getcount(t); i++) {
+	    //    rule* r = target_getrules(t);
+	    //    processline(rule_getcommand(r), rule_getcount(r));
+	    //}
+	    str_list sl = target_getrules(t);
+	    int i = 0;
+	    while ( i < target_getcount(t) && sl != NULL){
+		
+		processline(str_getdata((str_node*) sl));
+		sl = sl->next;
+
+	    }
+	    
 	}
 	count++;
     }
@@ -118,13 +129,16 @@ int main(int argc, const char* argv[]) {
 
 /* Process Line
  * argv   The command line to execute
- * argcp  The number of arguments in the command line
  * 
- * This function uses fork to execute the command given in argv in the child process.
+ * This function calls arg_parse to get the arguments for the given line,
+ * then uses fork to execute the command given in the line in the child process.
  * The parent process waits for the child to complete before the function exits.
  */
-void processline (char** argv, int argcp) {
+void processline (char* line) {
  
+    int argcp   = -1;
+    char** argv = arg_parse(line, &argcp);
+
     if (argcp  > 0) {
 	const pid_t cpid = fork();
 

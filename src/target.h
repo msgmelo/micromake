@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include "arg_parse.h"
+#include "str_node.h"
 #include "list.h"
 
 #define TARGET_S   1
@@ -19,6 +20,7 @@
 struct                   target_st;
 typedef struct target_st target;
 typedef list             target_list;
+
 
 /* New Target
  * name    Name to give new target
@@ -48,10 +50,10 @@ void    target_free(target* t, void* arg);
  *
  * This block of functions returns the appropriate field of the target
  * given by the pointer.
- */
-char*   target_getname(target* t);
-int     target_getrule_count(target* t);
-char**  target_getrules(target* t);
+ */ 
+char*    target_getname(target* t);
+int      target_getcount(target* t);
+str_list target_getrules(target* t);
 
 /* Target Add Rule
  * t        Pointer to target to add rule to
@@ -61,7 +63,7 @@ char**  target_getrules(target* t);
  * This functions adds the given rule to the target, allocating and freeing
  * rule space as necessary.
  */
-void    target_addrule(target* t, char** rule, int count);
+void    target_addrule(target* t, char* rule);
 
 /* Target Parse Name
  * line     Where to parse name from
