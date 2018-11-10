@@ -39,11 +39,10 @@ void    target_print(cons* c, void* arg);
 
 /* Target Free
  * t        Target to free
- * arg      NULL
  *
  * Frees the target and the fields within the target struct
  */
-void    target_free(target* t, void* arg);
+void    target_free(target* t);
 
 /* Target Get X
  * t        The target whose field to retrieve

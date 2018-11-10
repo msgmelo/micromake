@@ -18,6 +18,7 @@ str_node* str_new(char* data);
 void      str_print(cons* c, void* arg);
 
 void      str_free(str_node* s);
+void      strlist_free(str_list sl);
 
 char*     str_getdata(str_node* s);
 

@@ -23,6 +23,17 @@ void str_free(str_node* s) {
     free(s);
 }
 
+void strlist_free(str_list sl) {
+    str_node* tmp = NULL;
+
+    while (sl != NULL) {
+	tmp = (str_node*) sl;
+	sl = sl->next;
+	str_free(tmp);
+    }
+}
+
+	    
 
 char* str_getdata(str_node* s) {
     return s->data;

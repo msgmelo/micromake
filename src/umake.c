@@ -90,6 +90,7 @@ int main(int argc, const char* argv[]) {
 
     size_t      bufsize   = 0;
     char*       line      = NULL;
+    char*       buf       = NULL;
     ssize_t     linelen   = getline(&line, &bufsize, makefile);
     target*     t         = NULL;
     target_list l         = NULL;
@@ -107,15 +108,20 @@ int main(int argc, const char* argv[]) {
 	if (is_target(line) && !in_target) {
 	    in_target = 1;
 
-	    t = target_new(target_parsename(line));
+	    buf = target_parsename(line);
+	    t = target_new(buf);
+	    free(buf);
+	    
 	    target_adddep(t, target_parsedep(line));
 
 	} else if (is_target(line) && in_target) {
-	    
 	    list_append(&l, (cons*) t);
-	    t = target_new(target_parsename(line));
-	    target_adddep(t, target_parsedep(line));
 
+	    buf = target_parsename(line);
+	    t = target_new(buf);
+	    free(buf);
+	    
+	    target_adddep(t, target_parsedep(line));
 
 	} else if (in_target && line[0] == '\t') {
 	    
@@ -142,10 +148,11 @@ int main(int argc, const char* argv[]) {
 
 
     // free list
+    target* tmp = NULL;
     while (l != NULL) {
-	target* tmp = (target*) l;
+	tmp = (target*) l;
 	l = l->next;
-	target_free(tmp, NULL);
+	target_free(tmp);
     }
 
     fclose(makefile);

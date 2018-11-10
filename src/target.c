@@ -33,23 +33,11 @@ void target_print(cons* c, void* arg) {
 }
 
 
-static void rules_free(str_list l, int count) {
 
-    int i = 0;
-    str_node* tmp = NULL;
+void target_free(target* t) {
+    strlist_free(t->rules);
+    strlist_free(t->depends);
 
-    while (l != NULL && i < count) {
-	tmp = (str_node*) l;
-	l = l->next;
-	free(str_getdata(tmp));
-	free(tmp);
-	i++;
-    }
-}
-
-
-void target_free(target* t, void* arg) {
-    rules_free(t->rules, t->rule_count);
     free(t->name);    
     free(t);
 }
@@ -182,12 +170,9 @@ char* target_parsename(char* line) {
 
 
     name[j] = '\0';
-    char* name_final = malloc(sizeof(char) * (j + 1));
-    
-    strncpy(name_final, name, j);
 
 
-    return name_final;
+    return strndup(name, strlen(name));
 }
 
 str_list target_parsedep(char* line) {
