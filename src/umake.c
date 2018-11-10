@@ -39,8 +39,12 @@ int main(int argc, const char* argv[]) {
     } 
 
 
-    
+     
     FILE*   makefile  = fopen("./uMakefile", "r");
+    if (makefile == NULL) {
+	perror("./uMakefile");
+	exit(1);
+    }
 
     size_t      bufsize   = 0;
     char*       line      = NULL;
