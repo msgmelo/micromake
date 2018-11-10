@@ -3,7 +3,7 @@
  * 09 AUG 2017, Aran Clauson
  *
  * UPDATED:
- * 12 OCT 2018, Melody Grappo
+ * 9 NOV 2018, Melody Grappo
  */
 
 
@@ -32,6 +32,10 @@ void processline(char* line);
  */
 void processtarget(target* t);
 
+/* Define Environment Variable
+ *
+ */
+int defenv(char* line); 
 
 /* Process Dependencies
  * l     The list of targets
@@ -99,6 +103,7 @@ int main(int argc, const char* argv[]) {
             line[linelen] = '\0';
         }
 
+	
 	if (is_target(line) && !in_target) {
 	    in_target = 1;
 
@@ -116,6 +121,8 @@ int main(int argc, const char* argv[]) {
 	    
 	    target_addrule(t, line);
 
+	} else if (!is_target(line)) {
+	    defenv(line);
 	}
 
         linelen = getline(&line, &bufsize, makefile);
@@ -201,6 +208,105 @@ void processline (char* line) {
     }
 }
 
+int defenv(char* line) {
+    int ret = 0;
+    int i = 0;
+    int j = 0;
+    int inword = 0;
+    int end = 0;
+    int len = strlen(line);
+    char name[len];
+    char value[len];
+
+    while (i < len && !end) {
+	if (line[i] == '=')
+	    end = 1;
+	else {
+	    if (!isspace(line[i]) && !inword) {
+		inword = 1;
+	    }
+
+	    if (!isspace(line[i]) && inword) {
+		name[j] = line[i];
+		j++;
+	    } else if (isspace(line[i]) && inword) {
+		inword = 0;
+	    }
+	}
+	i++;
+    }
+
+    if (end) { 
+	name[j] = '\0';
+
+	j = 0;
+	inword = 0;
+	while (i < len) {
+	    if (!inword && !isspace(line[i])) {
+		inword = 1;
+	    }
+
+	    if (inword) {
+		value[j] = line[i];
+		j++;
+	    }
+	    i++;
+	}
+
+	value[j] = '\0';
+
+	ret = setenv(name, value, 1);
+    }
+
+    return ret;
+}
+
+//int defenv(char* line) {
+//
+//    char* left = strtok(line, "=");
+//    char* right = strtok(NULL, "=");
+//
+//    if (right == NULL) {
+//	return 0;
+//    } 
+//
+//    // remove trailing spaces
+//    int inword = 0;
+//    int end = 0;
+//    int i = 0;
+//    while (i < strlen(left) && !end) {
+//	if (!isspace(left[i]) && !inword) {
+//	    inword = 1;
+//	} else if (isspace(left[i]) && inword) {
+//	    end = 1;
+//	} 
+//	i++;
+//    }
+//    left[i] = '\0';
+//
+//    // remove heading spaces
+//    i = 0;
+//    int j = 0;
+//    inword = 0;
+//    char assignment[strlen(left)];
+//    while (i < strlen(line)) {
+//	if (!isspace(line[i]) && !inword) {
+//	    inword = true;
+//	}
+//
+//	if (inword) {
+//	    assignment[j] = line[i];
+//	    j++;
+//	}
+//	i++;
+//    }
+//
+//    int ret = setenv(left, assingment, 1)
+//
+//    
+//    return ret;
+//}
+//
 
 int expand(char* orig, char* new, int newsize) {
 
