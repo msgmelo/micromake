@@ -64,6 +64,14 @@ str_list target_getdepend(target* t);
  * rule space as necessary.
  */
 void    target_addrule(target* t, char* rule);
+
+/* Target Add Dependency
+ * t     Pointer to target to add rule to
+ * dep   dependency list to add to target t
+ *
+ * This function adds the given dependency list to the target, and allocates
+ * space for the dependency list.
+ */
 void    target_adddep(target* t, str_list dep);
 
 /* Target Parse Name
@@ -73,6 +81,12 @@ void    target_adddep(target* t, str_list dep);
  */
 char*    target_parsename(char* line);
 
+/* Target Parse Dependency
+ * line    The line where the dependecies are
+ *
+ * This function parses the dependencies from a line that defines its
+ * targets and dependencies, and returns the gathered dependencies as str_list.
+ */
 str_list target_parsedep(char* line);
 
 /* Target Is Match

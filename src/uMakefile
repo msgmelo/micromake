@@ -1,25 +1,34 @@
 CC = gcc
+FLAGS = -g -Wall
 
-umake: umake.o arg_parse.o target.o list.o str_node.o
-	${CC} -o umake umake.o arg_parse.o target.o list.o str_node.o
+umake: umake.o arg_parse.o target.o list.o str_node.o processline.o
+	${CC} ${FLAGS} -o umake umake.o arg_parse.o target.o list.o str_node.o processline.o
 	echo done umake
 
-umake.o: umake.c arg_parse.o target.o list.o str_node.o
-	${CC} -c -o umake.o umake.c 
+umake.o: umake.c arg_parse.o target.o list.o str_node.o processline.o
+	${CC} ${FLAGS} -c -o umake.o umake.c 
 	echo done umake.o
 
+processline.o: processline.c arg_parse.o target.o str_list.o list.o
+	${CC} ${FLAGS} -c -o processline.o processline.c
+	echo done processline.o
+
 arg_parse.o: arg_parse.c list.o
-	${CC} -c -o arg_parse.o arg_parse.c 
+	${CC} ${FLAGS} -c -o arg_parse.o arg_parse.c 
 	echo done arg_parse.o
 
 target.o: target.c list.o str_node.o
-	${CC} -c -o target.o target.c 
+	${CC} ${FLAGS} -c -o target.o target.c 
 	echo done target.o
 
 str_node.o: str_node.c list.o
-	${CC} -c -o str_node.o str_node.c 
+	${CC} ${FLAGS} -c -o str_node.o str_node.c 
 	echo done str_node.o
 
 list.o: list.c
-	${CC} -c -o list.o list.c
+	${CC} ${FLAGS} -c -o list.o list.c
 	echo done list.o
+
+clean: 
+	rm -f umake core *.o
+	

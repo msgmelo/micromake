@@ -5,13 +5,12 @@
 #include "target.h"
 #include "list.h"
 
+/* FUNCTION DESCRIPTIONS IN HEADER FILE */
 
 /* Process Line
- * argv   The command line to execute
- * 
- * This function calls arg_parse to get the arguments for the given line,
- * then uses fork to execute the command given in the line in the child process.
- * The parent process waits for the child to complete before the function exits.
+ *
+ * Attempts to expand the given line, then calls arg_parse before
+ * fork and execing to the new process given by line.
  */
 void processline (char* line) {
 
@@ -59,6 +58,13 @@ void processline (char* line) {
     }
 }
 
+
+/* Define Environment
+ *
+ * This function first finds the left hand of the variable assignment deliminated by '=',
+ * then finds the right side of the assignmnet, and calls setenv() on the appropriate char*s. 
+ * Returns 0 on a failure and 1 on success.
+ */
 int defenv(char* line) {
     int ret = 0;
     int i = 0;
@@ -112,6 +118,10 @@ int defenv(char* line) {
     return ret;
 }
 
+/* Expand
+ *
+ * returns 1 on a success, 0 on a failure
+ */
 int expand(char* orig, char* new, int newsize) {
 
     bool inexpand = false;
@@ -156,7 +166,10 @@ int expand(char* orig, char* new, int newsize) {
     }
 }
 
-
+/* Substring
+ *
+ * allocates space for the returned char*
+ */
 char* substring(int start, int end, char* str) {
     char sub[end-start];
     int cur = start;
@@ -172,6 +185,10 @@ char* substring(int start, int end, char* str) {
     return strndup(sub, strlen(sub));
 }
 
+/* Process Target
+ *
+ * Calls processline() on each rule within a target
+ */
 void processtarget (target* t) {
     str_list sl = target_getrules(t);
     int i = 0;
@@ -186,6 +203,12 @@ void processtarget (target* t) {
     }
 }
 
+/* Process Dependencies
+ *
+ * Recursively iterates through each target's dependecy in the given 
+ * target_list, then processes the target once all the dependencies have
+ * been processed.
+ */
 void processdep (target_list l, target* t) {
     if (t == NULL)
 	return;
