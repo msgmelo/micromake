@@ -9,6 +9,7 @@ str_node* str_new(char* data) {
     str_node* s = halloc(sizeof(str_node));
 
     s->data = strndup(data, strlen(data));
+    s->next = NULL;
 
     return s;
 }
