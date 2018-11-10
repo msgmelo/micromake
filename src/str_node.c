@@ -13,7 +13,7 @@ str_node* str_new(char* data) {
     return s;
 }
 
-void str_print(cons* c`) {
+void str_print(cons* c) {
     str_node* s = (str_node*) c;
     printf("%s\n", s->data);
 }
