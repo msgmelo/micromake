@@ -98,7 +98,7 @@ int defenv(char* line) {
 
 	j = 0;
 	inword = 0;
-	while (i < len) {
+	while (i < len && line[i] != '#') {
 	    if (!inword && !isspace(line[i])) {
 		inword = 1;
 	    }

@@ -46,7 +46,7 @@ int arg_count(char* line) {
     int i        = 0;
     int in_word  = 0; 
    
-    while(line[i] != '\0') {
+    while(line[i] != '\0' && line[i] != '#') {
 	
         if (isspace(line[i]) && in_word) {             
 	    in_word    = 0;
@@ -75,7 +75,7 @@ void arg_copy(char* line, char** args){
     int j       = 0;
     int in_word = 0;
 
-    while(line[i] != '\0') {
+    while(line[i] != '\0' && line[i] != '#') {
 
 	if (isspace(line[i]) && in_word) {
 	    in_word = 0;

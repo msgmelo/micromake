@@ -21,7 +21,7 @@
 
 /* Main entry point.
  * argc    A count of command-line arguments 
- * argv    The command-line argument valus
+ * argv    The command-line argument values
  *
  * Micro-make (umake) reads from the uMakefile in the current working
  * directory.  The file is read one line at a time. Lines are parsed into targets
@@ -62,33 +62,34 @@ int main(int argc, const char* argv[]) {
             line[linelen] = '\0';
         }
 
-	
-	if (is_target(line) && !in_target) {
-	    in_target = 1;
+        if (line[0] != '#') {	
+	    if (is_target(line) && !in_target) {
+		in_target = 1;
 
-	    buf = target_parsename(line);
-	    t = target_new(buf);
-	    free(buf);
-	    
-	    target_adddep(t, target_parsedep(line));
+		buf = target_parsename(line);
+		t = target_new(buf);
+		free(buf);
 
-	} else if (is_target(line) && in_target) {
-	    list_append(&l, (cons*) t);
+		target_adddep(t, target_parsedep(line));
 
-	    buf = target_parsename(line);
-	    t = target_new(buf);
-	    free(buf);
-	    
-	    target_adddep(t, target_parsedep(line));
+	    } else if (is_target(line) && in_target) {
+		list_append(&l, (cons*) t);
 
-	} else if (in_target && line[0] == '\t') {
-	    
-	    target_addrule(t, line);
+		buf = target_parsename(line);
+		t = target_new(buf);
+		free(buf);
+		
+		target_adddep(t, target_parsedep(line));
 
-	} else if (!is_target(line)) {
-	    defenv(line);
+	    } else if (in_target && line[0] == '\t') {
+		
+		target_addrule(t, line);
+
+
+	    } else if (!is_target(line)) {
+		defenv(line);
+	    }
 	}
-
         linelen = getline(&line, &bufsize, makefile);
 
     }
