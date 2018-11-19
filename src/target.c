@@ -34,6 +34,7 @@ void target_print(cons* c, void* arg) {
 
 
 
+
 void target_free(target* t) {
     strlist_free(t->rules);
     strlist_free(t->depends);
@@ -96,6 +97,7 @@ bool is_target(char* line) {
     return target_q0(line);
 }
 
+
 bool target_q0(char* line) {
     switch(target_char_class(*line)) {
 	case TARGET_S: 
@@ -157,8 +159,9 @@ char* target_parsename(char* line) {
     int fin = 0;
 
     while ((line[i] != ':') && !fin) {
-
-       	if (!isspace(line[i]))	{
+	if (line[i] == '#') {
+	    fin = 1;
+	} else if (!isspace(line[i]))	{
 	    in_word = 1;
 	    name[j] = line[i];
 	    j++;
@@ -190,7 +193,7 @@ str_list target_parsedep(char* line) {
 	i++;
     }
 
-    while (line[i] != '\0') {
+    while (line[i] != '\0' && line[i] != '#') {
 	if (isspace(line[i]) && inword) {
 	    word[j] = '\0';
 	    dep = str_new(word);

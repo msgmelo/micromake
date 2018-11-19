@@ -166,6 +166,28 @@ int expand(char* orig, char* new, int newsize) {
     }
 }
 
+/* Needs Update
+ *
+ * Returns 1 if dependency is newer than target or the target does not exist,
+ * otherwise returns 0.  
+ */
+int needupdate(char* target, char* dep){
+    int ret = 1;
+
+    struct stat tinfo;
+    struct stat dinfo;
+
+    if (stat(target, &tinfo) == 0 && stat(dep, &dinfo) == 0) {
+	struct timespec tmod = tinfo.st_mtim;
+	struct timespec dmod = dinfo.st_mtim;
+	if (tmod.tv_sec >= dmod.tv_sec && tmod.tv_nsec > dmod.tv_nsec)
+	    ret = 0; 
+    }
+
+    return ret;
+}
+
+
 /* Substring
  *
  * allocates space for the returned char*
@@ -215,8 +237,12 @@ void processdep (target_list l, target* t) {
     else {
 	str_list deps = target_getdepend(t);
 	while (deps) {
-	    target* t_oth = target_findmatch(l, str_getdata((str_node*) deps));
-	    processdep(l, t_oth);
+	    char* dep_name = str_getdata((str_node*) deps);
+
+	    if (needupdate(target_getname(t), dep_name)) {
+		    target* t_oth = target_findmatch(l, dep_name);
+		    processdep(l, t_oth);
+	    }
 
 	    deps = deps->next;
 	}

@@ -125,6 +125,16 @@ int  target_char_class(char c);
 bool is_target(char* line);
 
 
+/* Target Needs Update
+ * t     The target name
+ * dep   The dependency name
+ *
+ * This function determines if the given dependency of the given target is 
+ * newer than the target itself.
+ * Returns true if the dependency is newer than the target. 
+ */
+bool target_needupdate(char* t, char* dep);
+
 /* Target State Q*
  * line     Line to determine if is a target
  *
@@ -137,6 +147,8 @@ bool is_target(char* line);
  * Q2 : ignores spaces (but not tabs). Advances to Q3 if colon character is 
  *      found
  * Q3 : returns true regardless of character classification
+ *
+ * 
  */
 bool target_q0(char* line);
 bool target_q1(char* line);

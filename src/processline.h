@@ -2,6 +2,10 @@
 #define PROCESSLINE_H_
 
 #include "target.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 
 /* Process Line
  * line    The command line to execute
@@ -40,6 +44,16 @@ int   defenv(char* line);
  * Returns 1 on success and 0 upon failure.
  */
 int   expand(char* orig, char* new, int newsize);
+
+/* Needs Update
+ * t     The target name
+ * dep   The dependency name
+ *
+ * This function determines if the given dependency of the given target is 
+ * newer than the target itself.
+ * Returns 1 if the dependency is newer than the target, otherwise returns -1.
+ */
+int needupdate(char* t, char* dep);
 
 /* Substring
  * start    The beginning of the desired substring
