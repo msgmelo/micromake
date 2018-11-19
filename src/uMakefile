@@ -1,7 +1,7 @@
 CC = gcc
 FLAGS = -g -Wall
 
-umake: list.o str_node.o target.o arg_parse.o processline.o umake.o
+umake: umake.o arg_parse.o target.o list.o str_node.o processline.o
 	${CC} ${FLAGS} umake.o arg_parse.o target.o list.o str_node.o processline.o -o umake
 	echo done umake
 
@@ -13,7 +13,7 @@ processline.o: processline.c processline.h arg_parse.h target.h str_list.h list.
 	${CC} ${FLAGS} -c -o processline.o processline.c
 	echo done processline.o
 
-arg_parse.o: arg_parse.c list.h
+arg_parse.o: arg_parse.c arg_parse.h list.h
 	${CC} ${FLAGS} -c -o arg_parse.o arg_parse.c 
 	echo done arg_parse.o
 
@@ -32,6 +32,3 @@ list.o: list.c list.h
 clean:	
 	ls *.o
 	rm -f umake core *.o
-
-install:
-	cp -p umake ${HOME}\bin\umake
