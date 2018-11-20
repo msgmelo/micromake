@@ -52,9 +52,21 @@ int   expand(char* orig, char* new, int newsize);
  *
  * This function determines if the given dependency of the given target is 
  * newer than the target itself.
- * Returns 1 if the dependency is newer than the target, otherwise returns -1.
+ * 
+ * Returns true if the dependency is newer than the target.
  */
-int needupdate(char* t, char* dep);
+bool needupdate(char* t, char* dep);
+
+
+/* Out of Date
+ * t     The target
+ *
+ * This function determines if the target is out of date; ie if any of its 
+ * dependencies are newer than the target, or if the target does not exist
+ * 
+ * returns true if target is out of date
+ */
+bool out_of_date(target* t);
 
 /* Substring
  * start    The beginning of the desired substring

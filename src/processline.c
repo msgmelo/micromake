@@ -170,28 +170,54 @@ int expand(char* orig, char* new, int newsize) {
 
 /* Needs Update
  *
- * Returns 1 if dependency is newer than target or the target does not exist,
- * otherwise returns 0.  
+ * Returns true if dependency is newer than target or the target does not exist,
+ * otherwise returns false.  
  */
-int needupdate(char* target, char* dep){
-    int ret = 1;
+bool needupdate(char* target, char* dep){
+    bool ret = true;
 
     struct stat tinfo;
     struct stat dinfo;
 
-    if (stat(target, &tinfo) == 0 && stat(dep, &dinfo) == 0) {
-	struct timespec tmod = tinfo.st_mtim;
-	struct timespec dmod = dinfo.st_mtim;
-	if (tmod.tv_sec > dmod.tv_sec) { 
-	    ret = 0; 
-	} else if (tmod.tv_sec == dmod.tv_sec && tmod.tv_nsec > dmod.tv_nsec) {
-	    ret = 0;
+    if (dep == NULL && stat(target, &tinfo) == 0) {
+	ret = false;
+    } else {
+	if (stat(target, &tinfo) == 0 && stat(dep, &dinfo) == 0) {
+	    struct timespec tmod = tinfo.st_mtim;
+	    struct timespec dmod = dinfo.st_mtim;
+	    if (tmod.tv_sec > dmod.tv_sec) { 
+		ret = false; 
+	    } else if (tmod.tv_sec == dmod.tv_sec && tmod.tv_nsec > dmod.tv_nsec) {
+		ret = false;
+	    }
 	}
     }
 
     return ret;
 }
 
+/* Out of Date
+ * 
+ * returns true if the target is out of date
+ */
+
+bool out_of_date(target* t) {
+    bool ret = false;
+    str_list deps = target_getdepend(t);
+    char* t_name = target_getname(t);
+
+    if (deps == NULL) {
+	ret = needupdate(t_name, NULL);
+    }
+
+
+    while (deps) {
+	char* d_name = str_getdata((str_node*) deps);	
+	ret |= needupdate(t_name, d_name);	
+	deps=deps->next;
+    }
+    return ret;
+}
 
 /* Substring
  *
@@ -243,20 +269,15 @@ void processdep (target_list l, target* t) {
 	return;
     else {
 	str_list deps = target_getdepend(t);
-	int update = 0;
 	while (deps) {
 	    char* dep_name = str_getdata((str_node*) deps);
 	    target* t_oth = target_findmatch(l, dep_name);
 	    processdep(l, t_oth);
 
-	    if (needupdate(target_getname(t), dep_name)) {
-		update = 1;
-	    }
 	    deps = deps->next;
 	    
 	}
-	if (update > 0 || target_getdepend(t) == NULL)
+	if (out_of_date(t))
 	    processtarget(t);
-
     }
 }
