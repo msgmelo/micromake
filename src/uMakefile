@@ -9,7 +9,7 @@ umake.o: umake.c arg_parse.h target.h list.h str_node.h processline.h
 	${CC} ${FLAGS} -c -o umake.o umake.c 
 	echo done umake.o
 
-processline.o: processline.c processline.h arg_parse.h target.h str_list.h list.h
+processline.o: processline.c processline.h arg_parse.h target.h str_node.h list.h
 	${CC} ${FLAGS} -c -o processline.o processline.c
 	echo done processline.o
 

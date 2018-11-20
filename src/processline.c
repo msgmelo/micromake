@@ -180,8 +180,11 @@ int needupdate(char* target, char* dep){
     if (stat(target, &tinfo) == 0 && stat(dep, &dinfo) == 0) {
 	struct timespec tmod = tinfo.st_mtim;
 	struct timespec dmod = dinfo.st_mtim;
-	if (tmod.tv_sec >= dmod.tv_sec && tmod.tv_nsec > dmod.tv_nsec)
+	if (tmod.tv_sec > dmod.tv_sec) { 
 	    ret = 0; 
+	} else if (tmod.tv_sec == dmod.tv_sec && tmod.tv_nsec > dmod.tv_nsec) {
+	    ret = 0;
+	}
     }
 
     return ret;
@@ -199,8 +202,8 @@ char* substring(int start, int end, char* str) {
 
     while (cur <= end) {
 	sub[i] = str[cur];
-	i++;
 	cur++;
+	i++;
     }
 
     sub[i] = '\0';
@@ -212,6 +215,8 @@ char* substring(int start, int end, char* str) {
  * Calls processline() on each rule within a target
  */
 void processtarget (target* t) {
+    if (t == NULL)
+	return;
     str_list sl = target_getrules(t);
     int i = 0;
 
@@ -236,17 +241,21 @@ void processdep (target_list l, target* t) {
 	return;
     else {
 	str_list deps = target_getdepend(t);
+	int update = 0;
 	while (deps) {
 	    char* dep_name = str_getdata((str_node*) deps);
+	    target* t_oth = target_findmatch(l, dep_name);
+	    processdep(l, t_oth);
 
 	    if (needupdate(target_getname(t), dep_name)) {
-		    target* t_oth = target_findmatch(l, dep_name);
-		    processdep(l, t_oth);
+		update = 1;
 	    }
-
 	    deps = deps->next;
+	    
 	}
-	processtarget(t);
+	if (update > 0)
+	    processtarget(t);
+
     }
 }
 
