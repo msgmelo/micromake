@@ -19,11 +19,10 @@ void processline (char* line) {
     int sz      = 1.5*strlen(line);
     char buf[sz];
 
-    if (expand(line, buf, sz) == 0)
-	argv = arg_parse(line, &argcp);
-    else
-	argv = arg_parse(buf, &argcp);
+    if (expand(line, buf, sz) != 0)
+	line = buf;
 
+    argv = arg_parse(line, &argcp);
 
     if (argcp  > 0) {
 	const pid_t cpid = fork();
@@ -36,6 +35,9 @@ void processline (char* line) {
 	  }
 
 	  case 0: { // child
+	      int loc = arg_containsIO(argv, argcp);
+              if (loc != -1)
+		  argv = arg_IOred(argv, argcp, loc);
 	      execvp(argv[0], argv);
 	      perror("execvp");
 	      exit(EXIT_FAILURE);
@@ -253,10 +255,8 @@ void processdep (target_list l, target* t) {
 	    deps = deps->next;
 	    
 	}
-	if (update > 0)
+	if (update > 0 || target_getdepend(t) == NULL)
 	    processtarget(t);
 
     }
 }
-
-

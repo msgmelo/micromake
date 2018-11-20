@@ -91,3 +91,66 @@ void arg_copy(char* line, char** args){
     
     args[j] = NULL;
 }
+
+char** arg_trunc(char** args, int argcp, int loc) {
+    int ct = argcp - loc;
+    int i = 0;
+    char** update = halloc(sizeof(char*) * ct);
+    while (i < ct - 1) {
+	update[i] = args[i];
+	i++;
+    }
+
+    free(args);
+
+    return update;
+}
+
+int arg_isIO(char* c) {
+    if (strcmp(c, ">") == 0)
+	return ARG_T;
+    else if (strcmp(c, "<") == 0)
+	return ARG_R;
+    else if (strcmp(c, ">>") == 0)
+	return ARG_A;
+    else
+	return -1;
+}
+
+
+int arg_containsIO(char** argv, int argc) {
+    int i = 0;
+    int loc = -1;
+    for (i = 0; i < argc; i++) {
+	if (arg_isIO(argv[i]) != -1)
+	    loc = i;
+    }
+
+    return loc;
+}
+
+char** arg_IOred(char** argv, int argcp, int loc) {
+    int fd;
+    switch (arg_isIO(argv[loc])) {
+	case ARG_T: 
+	    fd = open(argv[loc+1], O_WRONLY | O_CREAT | O_TRUNC, 0600);
+	    dup2(fd, 1);
+	    break;
+	
+	case ARG_R:
+	    fd = open(argv[loc+1], O_RDONLY, 0600);
+	    if (fd == -1) {
+		perror("open");
+		abort();
+	    }
+	    dup2(fd, 0);
+	    break;
+
+	case ARG_A:
+	    fd = open(argv[loc+1], O_RDWR | O_CREAT | O_APPEND, 0600);
+	    dup2(fd, 1);
+	    break;
+    }
+
+    return arg_trunc(argv, argcp, loc);
+}

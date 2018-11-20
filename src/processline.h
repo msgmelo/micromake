@@ -2,6 +2,7 @@
 #define PROCESSLINE_H_
 
 #include "target.h"
+#include "arg_parse.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -59,8 +60,9 @@ int needupdate(char* t, char* dep);
  * start    The beginning of the desired substring
  * end      The end of the desired substring
  * str      The string in which the substring is contained
- * This functino returns the substring of the given str in the range [start, end]
+ * This function returns the substring of the given str in the range [start, end]
  */
 char* substring (int start, int end, char* str);
+
 
 #endif
