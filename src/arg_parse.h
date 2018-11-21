@@ -72,7 +72,7 @@ int arg_isIO(char* s);
  * argv     The command line to check for IO redirect
  * argc     The size of the command line
  * 
- * returns the location of the redirect symbol, 
+ * returns the location of the first redirect symbol, 
  *         or -1 if no such symbol is found 
  */
 int arg_containsIO(char** argv, int argcp);

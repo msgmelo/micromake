@@ -92,6 +92,13 @@ void arg_copy(char* line, char** args){
     args[j] = NULL;
 }
 
+/* Argument Truncate
+ * args   The original arguments
+ * argcp  The location of the original argument count
+ * loc    the start of the location of the arguments to be removed
+ *
+ * Removes the arguments at loc and loc + 1, and returns the new array.
+ */
 char** arg_trunc(char** args, int* argcp, int loc) {
     int ct = *argcp - 2;
     int i = 0;
@@ -112,6 +119,15 @@ char** arg_trunc(char** args, int* argcp, int loc) {
     return update;
 }
 
+
+/* Argument is IO
+ * c    The string to determine whether it is an IO redirect symbol
+ *
+ * returns -1     if s is not a redirect
+ * returns ARG_T  if s is the truncate symbol (>)
+ * returns ARG_R  if s is the redirect symbol (<)
+ * returns ARG_A  if s is the append symbol   (>>)
+ */
 int arg_isIO(char* c) {
     if (strcmp(c, ">") == 0)
 	return ARG_T;
@@ -123,6 +139,13 @@ int arg_isIO(char* c) {
 	return -1;
 }
 
+/* Argument Contains IO
+ * argv    the command line to check for IO redirect
+ * argc    the size of the command line
+ *
+ * returns the location of the first redirect symbol in argv,
+ *         or -1 if no such symbol is found
+ */
 
 int arg_containsIO(char** argv, int argc) {
     int i = 0;
@@ -139,6 +162,15 @@ int arg_containsIO(char** argv, int argc) {
     return loc;
 }
 
+
+/* Argument IO Redirect
+ * argv    The command line
+ * argc    The size of the command line
+ *
+ * Recursive function that performs necessary file management if a redirect
+ * symbol is present in argv. Calls itself until no IO symbols are left within
+ * argv, and returns the new argv.
+ */
 char** arg_IOred(char** argv, int argcp) {
     int loc = arg_containsIO(argv, argcp);
     if (loc == -1) {

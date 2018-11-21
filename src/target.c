@@ -92,11 +92,28 @@ int target_char_class(char c){
 	return TARGET_L;
 }
 
+/* Is Target
+ *
+ * uses the state machine described below to determine if the given line
+ * is a target. 
+ * returns true if line is a target
+ */
 
 bool is_target(char* line) {
     return target_q0(line);
 }
 
+
+/* State Machine to determine whether line is a target
+ *
+ * Q0 : ignores spaces (but not tabs). Advances to Q1 if non-space non-tab
+ *      character is found
+ * Q1 : ignores non-space non-tab characters. Advances to Q2 if space
+ *      character is found. Advaances to Q3 if colon character is found
+ * Q2 : ignores spaces (but not tabs). Advances to W3 if colon character is
+ *      found
+ * Q3 : returns true regardless of character classification
+ */
 
 bool target_q0(char* line) {
     switch(target_char_class(*line)) {
