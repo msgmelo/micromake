@@ -92,16 +92,22 @@ void arg_copy(char* line, char** args){
     args[j] = NULL;
 }
 
-char** arg_trunc(char** args, int argcp, int loc) {
-    int ct = argcp - loc;
+char** arg_trunc(char** args, int* argcp, int loc) {
+    int ct = *argcp - 2;
     int i = 0;
+    int j = 0;
     char** update = halloc(sizeof(char*) * ct);
-    while (i < ct - 1) {
-	update[i] = args[i];
+    while (j < ct && i < *argcp) {
+
+	if (i != loc && i != (loc+1)) {
+	    update[j] = args[i];
+	    j++;
+	}
 	i++;
     }
 
     free(args);
+    *argcp = ct;
 
     return update;
 }
@@ -121,36 +127,45 @@ int arg_isIO(char* c) {
 int arg_containsIO(char** argv, int argc) {
     int i = 0;
     int loc = -1;
-    for (i = 0; i < argc; i++) {
-	if (arg_isIO(argv[i]) != -1)
+    int found = 0;
+    while ( i < argc && found == 0) {
+	if (arg_isIO(argv[i]) != -1){
 	    loc = i;
+	    found = 1;
+	}
+	i++;
     }
 
     return loc;
 }
 
-char** arg_IOred(char** argv, int argcp, int loc) {
-    int fd;
-    switch (arg_isIO(argv[loc])) {
-	case ARG_T: 
-	    fd = open(argv[loc+1], O_WRONLY | O_CREAT | O_TRUNC, 0600);
-	    dup2(fd, 1);
-	    break;
-	
-	case ARG_R:
-	    fd = open(argv[loc+1], O_RDONLY, 0600);
-	    if (fd == -1) {
-		perror("open");
-		abort();
-	    }
-	    dup2(fd, 0);
-	    break;
+char** arg_IOred(char** argv, int argcp) {
+    int loc = arg_containsIO(argv, argcp);
+    if (loc == -1) {
+	return argv;
+    } else {
+	int fd;
+	switch (arg_isIO(argv[loc])) {
+	    case ARG_T: 
+		fd = open(argv[loc+1], O_WRONLY | O_CREAT | O_TRUNC, 0600);
+		dup2(fd, 1);
+		break;
+	    
+	    case ARG_R:
+		fd = open(argv[loc+1], O_RDONLY, 0600);
+		if (fd == -1) {
+		    perror("open");
+		    abort();
+		}
+		dup2(fd, 0);
+		break;
 
-	case ARG_A:
-	    fd = open(argv[loc+1], O_RDWR | O_CREAT | O_APPEND, 0600);
-	    dup2(fd, 1);
-	    break;
-    }
-
-    return arg_trunc(argv, argcp, loc);
+	    case ARG_A:
+		fd = open(argv[loc+1], O_RDWR | O_CREAT | O_APPEND, 0600);
+		dup2(fd, 1);
+		break;
+	}
+        char** new = arg_trunc(argv, &argcp, loc);
+	return arg_IOred(new, argcp);
+   }
 }

@@ -48,12 +48,15 @@ void arg_copy(char* line, char** args);
 /* Argument Truncate
  * argv     The orignial arguments
  * argcp    The original argument count
- * loc      The location at which the truncated arguments will terminate
+ * loc      The start location of the arguments to be removed
  *
- * This function truncates the given arguments up to but not including the loc
- * returns truncated arguments
+ * This function truncates the given arguments so that the new arguments do not contain the
+ * arguments at location loc and loc + 1. For example, if args were "wc -l < files > line_count" 
+ * with loc = 2, the returned arguments would be "wc -l > line_count"
+ *
+ * returns the truncated arguments
  */
-char** arg_trunc(char** argv, int argcp, int loc);
+char** arg_trunc(char** argv, int* argcp, int loc);
 
 /* Argument is IO
  * s      The string to determine whether it is an IO redirect symbol or not.
@@ -77,11 +80,11 @@ int arg_containsIO(char** argv, int argcp);
 /* Argument IO Redirect
  * argv    the command line that contains a redirect symbol
  * argc    the number of arguments in argv
- * loc     the location of the redirect symbol in argv
  *
- * This function performs the necessary file management to perfrom file IO 
- * redirect.
+ * This is a recursive function that performs the necessary file management 
+ * to perfrom file IO redirect.
+ *
  * returns updated command list
  */
-char** arg_IOred(char** argv, int argcp, int loc);
+char** arg_IOred(char** argv, int argcp);
 #endif

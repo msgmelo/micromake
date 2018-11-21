@@ -35,9 +35,7 @@ void processline (char* line) {
 	  }
 
 	  case 0: { // child
-	      int loc = arg_containsIO(argv, argcp);
-              if (loc != -1)
-		  argv = arg_IOred(argv, argcp, loc);
+	      argv = arg_IOred(argv, argcp);
 	      execvp(argv[0], argv);
 	      perror("execvp");
 	      exit(EXIT_FAILURE);
